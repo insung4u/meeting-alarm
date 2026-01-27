@@ -12,6 +12,7 @@ Windows용 매주 반복 회의 알림 프로그램입니다.
 
 ![메인 화면](assets/screenshot_main.png)
 ![트레이 아이콘](assets/screenshot_tray.png)
+![알림 화면](assets/screenshot_alert.png)
 
 ## 주요 기능
 
