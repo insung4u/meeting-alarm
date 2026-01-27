@@ -16,11 +16,16 @@ DefaultDirName={autopf}\{#MyAppNameEng}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 OutputDir=..\dist\installer
-OutputBaseFilename=MeetingAlarm_Setup_{#MyAppVersion}
+OutputBaseFilename=MeetingAlarm_Setup
+SetupIconFile=..\assets\icon.ico
+UninstallDisplayIcon={app}\icon.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
 PrivilegesRequired=lowest
+DirExistsWarning=no
+CloseApplications=force
+CloseApplicationsFilter=*.exe
 
 [Languages]
 Name: "korean"; MessagesFile: "compiler:Languages\Korean.isl"
@@ -31,6 +36,7 @@ Name: "startupicon"; Description: "Windows 시작 시 자동 실행"; GroupDescr
 
 [Files]
 Source: "..\dist\MeetingAlarm.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\assets\icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -42,3 +48,17 @@ Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: 
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+
+[UninstallDelete]
+Type: filesandordirs; Name: "{app}"
+
+[Code]
+function InitializeUninstall(): Boolean;
+var
+  ResultCode: Integer;
+begin
+  // 실행 중인 프로그램 강제 종료
+  Exec('taskkill', '/F /IM MeetingAlarm.exe', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  Sleep(500);
+  Result := True;
+end;

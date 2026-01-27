@@ -2,6 +2,10 @@
 
 Windows용 매주 반복 회의 알림 프로그램입니다.
 
+## 다운로드
+
+[MeetingAlarm_Setup.exe 다운로드](https://github.com/insung4u/meeting-alarm/releases/latest/download/MeetingAlarm_Setup.exe)
+
 ## 주요 기능
 
 - **미팅 관리**: 미팅 이름, 요일(다중 선택), 시간, 알림 시간 설정
@@ -61,7 +65,7 @@ python build.py
 1. [Inno Setup](https://jrsoftware.org/isinfo.php) 설치
 2. `installer/setup.iss` 파일을 Inno Setup으로 열기
 3. 컴파일 실행
-4. `dist/installer/MeetingAlarm_Setup_1.0.0.exe` 파일 생성됨
+4. `dist/installer/MeetingAlarm_Setup.exe` 파일 생성됨
 
 ## 사용 방법
 
