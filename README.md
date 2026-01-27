@@ -6,6 +6,8 @@ Windows용 매주 반복 회의 알림 프로그램입니다.
 
 [MeetingAlarm_Setup.exe 다운로드](https://github.com/insung4u/meeting-alarm/releases/latest/download/MeetingAlarm_Setup.exe)
 
+> 설치 시 "Windows의 PC 보호" 경고가 나타나면 "추가 정보" → "실행"을 클릭하세요.
+
 ## 주요 기능
 
 - **미팅 관리**: 미팅 이름, 요일(다중 선택), 시간, 알림 시간 설정
