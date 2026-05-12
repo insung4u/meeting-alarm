@@ -8,9 +8,14 @@ from .meeting import Meeting
 
 
 class Scheduler:
-    def __init__(self, on_alert: Callable[[Meeting], None]):
+    def __init__(
+        self,
+        on_alert: Callable[[Meeting], None],
+        on_meeting_disabled: Optional[Callable[[Meeting], None]] = None,
+    ):
         self.meetings: List[Meeting] = []
         self.on_alert = on_alert
+        self.on_meeting_disabled = on_meeting_disabled
         self._running = False
         self._thread: Optional[threading.Thread] = None
         self._alerted: set = set()  # 이미 알림을 보낸 (meeting_id, alert_time) 쌍
@@ -68,8 +73,11 @@ class Scheduler:
 
             if 0 <= time_diff <= 30 and alert_key not in self._alerted:
                 self._alerted.add(alert_key)
-                # UI 스레드에서 실행해야 하므로 콜백 호출
                 self.on_alert(meeting)
+                if not meeting.repeat:
+                    meeting.enabled = False
+                    if self.on_meeting_disabled:
+                        self.on_meeting_disabled(meeting)
 
     def get_next_alert_info(self) -> Optional[str]:
         """다음 알림 정보 반환"""

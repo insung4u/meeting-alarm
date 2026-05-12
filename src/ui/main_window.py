@@ -1,6 +1,6 @@
 """메인 윈도우 UI"""
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, font as tkfont
 from typing import List, Callable, Optional
 
 from ..core.meeting import Meeting
@@ -65,18 +65,24 @@ class MainWindow:
         list_frame.pack(fill=tk.BOTH, expand=True)
 
         # Treeview
-        columns = ("name", "days", "time", "alert")
+        columns = ("name", "days", "time", "alert", "repeat")
         self.tree = ttk.Treeview(list_frame, columns=columns, show="headings", selectmode="browse")
 
         self.tree.heading("name", text="미팅 이름")
         self.tree.heading("days", text="요일")
         self.tree.heading("time", text="시간")
         self.tree.heading("alert", text="알림")
+        self.tree.heading("repeat", text="반복")
 
-        self.tree.column("name", width=150)
-        self.tree.column("days", width=120)
-        self.tree.column("time", width=80)
-        self.tree.column("alert", width=80)
+        self.tree.column("name", width=130)
+        self.tree.column("days", width=110)
+        self.tree.column("time", width=70)
+        self.tree.column("alert", width=70)
+        self.tree.column("repeat", width=60, anchor=tk.CENTER)
+
+        # 취소선 태그 (1회 알림 완료된 항목)
+        done_font = tkfont.Font(overstrike=True)
+        self.tree.tag_configure("done", font=done_font, foreground="gray")
 
         # 스크롤바
         scrollbar = ttk.Scrollbar(list_frame, orient=tk.VERTICAL, command=self.tree.yview)
@@ -102,12 +108,15 @@ class MainWindow:
         # 미팅 추가
         for meeting in self.meetings:
             alert_text = f"{meeting.alert_minutes}분 전"
+            repeat_text = "매주" if meeting.repeat else "1회"
+            tags = ("done",) if not meeting.repeat and not meeting.enabled else ()
             self.tree.insert("", tk.END, iid=meeting.id, values=(
                 meeting.name,
                 meeting.get_days_str(),
                 meeting.get_time_str(),
-                alert_text
-            ))
+                alert_text,
+                repeat_text,
+            ), tags=tags)
 
     def _add_meeting(self) -> None:
         """미팅 추가"""

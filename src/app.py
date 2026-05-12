@@ -32,7 +32,10 @@ class MeetingAlarmApp:
         self.root = tk.Tk()
 
         # 스케줄러 초기화
-        self.scheduler = Scheduler(on_alert=self._on_alert)
+        self.scheduler = Scheduler(
+            on_alert=self._on_alert,
+            on_meeting_disabled=self._on_meeting_disabled,
+        )
         self.scheduler.set_meetings(self.meetings)
         self.scheduler.start()
 
@@ -75,10 +78,18 @@ class MeetingAlarmApp:
         return None
 
     def _on_alert(self, meeting: Meeting) -> None:
-        """알림 발생 시 호출"""
-        # UI 스레드에서 실행
         if self.root:
             self.root.after(0, lambda: self._show_alert(meeting))
+
+    def _on_meeting_disabled(self, _: Meeting) -> None:
+        """1회 미팅 알림 후 비활성화 처리 (스케줄러 스레드에서 호출)"""
+        if self.root:
+            self.root.after(0, self._handle_meeting_disabled)
+
+    def _handle_meeting_disabled(self) -> None:
+        save_meetings(self.meetings)
+        if self.main_window:
+            self.main_window.refresh_meetings(self.meetings)
 
     def _show_alert(self, meeting: Meeting) -> None:
         """알림 창 표시"""

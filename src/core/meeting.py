@@ -13,12 +13,14 @@ class Meeting:
     alert_minutes: int = 5  # 미팅 시작 n분 전 알림
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     enabled: bool = True
+    repeat: bool = True  # True=매주 반복, False=1회
 
     def to_dict(self) -> dict:
         return asdict(self)
 
     @classmethod
     def from_dict(cls, data: dict) -> "Meeting":
+        data.setdefault("repeat", True)
         return cls(**data)
 
     def get_time_str(self) -> str:

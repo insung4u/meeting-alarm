@@ -31,7 +31,7 @@ class MeetingDialog:
 
         # 창 크기 및 위치
         width = 350
-        height = 350
+        height = 390
         x = self.parent.winfo_x() + (self.parent.winfo_width() - width) // 2
         y = self.parent.winfo_y() + (self.parent.winfo_height() - height) // 2
         dialog.geometry(f"{width}x{height}+{x}+{y}")
@@ -59,10 +59,16 @@ class MeetingDialog:
             cb = ttk.Checkbutton(days_frame, text=day, variable=var)
             cb.pack(side=tk.LEFT, padx=(0, 10))
 
+        # 반복 여부
+        self.repeat_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(
+            main_frame, text="매주 반복", variable=self.repeat_var
+        ).grid(row=4, column=0, columnspan=2, sticky=tk.W, pady=(0, 15))
+
         # 시간 선택
-        ttk.Label(main_frame, text="시간:").grid(row=4, column=0, sticky=tk.W, pady=(0, 5))
+        ttk.Label(main_frame, text="시간:").grid(row=5, column=0, sticky=tk.W, pady=(0, 5))
         time_frame = ttk.Frame(main_frame)
-        time_frame.grid(row=5, column=0, columnspan=2, sticky=tk.W, pady=(0, 15))
+        time_frame.grid(row=6, column=0, columnspan=2, sticky=tk.W, pady=(0, 15))
 
         self.hour_var = tk.StringVar(value="09")
         self.minute_var = tk.StringVar(value="00")
@@ -82,9 +88,9 @@ class MeetingDialog:
         minute_spinbox.pack(side=tk.LEFT)
 
         # 알림 시간
-        ttk.Label(main_frame, text="알림 (미팅 시작 전):").grid(row=6, column=0, sticky=tk.W, pady=(0, 5))
+        ttk.Label(main_frame, text="알림 (미팅 시작 전):").grid(row=7, column=0, sticky=tk.W, pady=(0, 5))
         alert_frame = ttk.Frame(main_frame)
-        alert_frame.grid(row=7, column=0, columnspan=2, sticky=tk.W, pady=(0, 20))
+        alert_frame.grid(row=8, column=0, columnspan=2, sticky=tk.W, pady=(0, 20))
 
         self.alert_var = tk.StringVar(value=str(self.default_alert_minutes))
         alert_spinbox = ttk.Spinbox(
@@ -96,7 +102,7 @@ class MeetingDialog:
 
         # 버튼
         btn_frame = ttk.Frame(main_frame)
-        btn_frame.grid(row=8, column=0, columnspan=2, pady=(10, 0))
+        btn_frame.grid(row=9, column=0, columnspan=2, pady=(10, 0))
 
         ttk.Button(btn_frame, text="저장", command=self._on_save).pack(side=tk.LEFT, padx=(0, 10))
         ttk.Button(btn_frame, text="취소", command=self._on_cancel).pack(side=tk.LEFT)
@@ -122,6 +128,7 @@ class MeetingDialog:
         for day in self.meeting.days:
             self.day_vars[day].set(True)
 
+        self.repeat_var.set(self.meeting.repeat)
         self.hour_var.set(f"{self.meeting.hour:02d}")
         self.minute_var.set(f"{self.meeting.minute:02d}")
         self.alert_var.set(str(self.meeting.alert_minutes))
@@ -156,6 +163,8 @@ class MeetingDialog:
             messagebox.showwarning("경고", str(e), parent=self.dialog)
             return
 
+        repeat = self.repeat_var.get()
+
         # 미팅 생성/수정
         if self.meeting:
             self.meeting.name = name
@@ -163,6 +172,7 @@ class MeetingDialog:
             self.meeting.hour = hour
             self.meeting.minute = minute
             self.meeting.alert_minutes = alert_minutes
+            self.meeting.repeat = repeat
             self.result = self.meeting
         else:
             self.result = Meeting(
@@ -170,7 +180,8 @@ class MeetingDialog:
                 days=days,
                 hour=hour,
                 minute=minute,
-                alert_minutes=alert_minutes
+                alert_minutes=alert_minutes,
+                repeat=repeat
             )
 
         if self.on_save:
