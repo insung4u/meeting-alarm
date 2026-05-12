@@ -55,7 +55,7 @@ python build.py
 ### 설치 프로그램 생성
 ```powershell
 # Inno Setup 설치 위치 (사용자 설치 기준)
-& 'C:\Users\insun\AppData\Local\Programs\Inno Setup 6\ISCC.exe' installer/setup.iss
+& "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe" installer/setup.iss
 ```
 결과: `dist/installer/MeetingAlarm_Setup.exe`
 
@@ -89,7 +89,7 @@ python build.py
 
 6. **설치 파일 생성**
    ```powershell
-   & 'C:\Users\insun\AppData\Local\Programs\Inno Setup 6\ISCC.exe' installer/setup.iss
+   & "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe" installer/setup.iss
    ```
 
 7. **GitHub 릴리즈 생성**
@@ -97,7 +97,7 @@ python build.py
    gh release create vX.X.X dist/installer/MeetingAlarm_Setup.exe --title "vX.X.X" --notes "..."
    ```
    - 같은 태그 릴리즈가 이미 있으면 `gh release upload vX.X.X ... --clobber` 로 파일 교체
-   - GitHub CLI(`gh`) 위치: `C:\Users\insun\AppData\Local\GitHubCLI\bin\gh.exe`
+   - GitHub CLI(`gh`) 위치: `%LOCALAPPDATA%\GitHubCLI\bin\gh.exe` (사용자 설치 기준)
 
 ## 데이터 저장 위치
 

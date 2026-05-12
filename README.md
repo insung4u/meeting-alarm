@@ -74,7 +74,7 @@ python build.py
 1. [Inno Setup](https://jrsoftware.org/isinfo.php) 설치
 2. 아래 명령어 실행 (Inno Setup 설치 경로에 따라 조정):
 ```powershell
-& 'C:\Users\<사용자명>\AppData\Local\Programs\Inno Setup 6\ISCC.exe' installer/setup.iss
+& "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe" installer/setup.iss
 ```
 3. `dist/installer/MeetingAlarm_Setup.exe` 파일 생성됨
 
