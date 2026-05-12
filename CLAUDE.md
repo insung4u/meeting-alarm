@@ -59,6 +59,46 @@ python build.py
 ```
 결과: `dist/installer/MeetingAlarm_Setup.exe`
 
+## 릴리즈 절차
+
+기능 추가 또는 수정 후 GitHub에 올릴 때는 아래 순서를 반드시 따른다.
+
+1. **버전 번호 업데이트** — 두 곳 모두 수정
+   - `src/version.py` → `VERSION = "x.x.x"`
+   - `installer/setup.iss` → `#define MyAppVersion "x.x.x"`
+
+2. **README.md 업데이트**
+   - 추가/수정된 기능을 `## 주요 기능` 및 `## 사용 방법`에 반영
+   - `## 버전 히스토리`에 새 버전 항목 추가
+
+3. **CLAUDE.md 업데이트**
+   - AI 참고 정보 중 변경된 내용 반영
+
+4. **소스 커밋**
+   - `__pycache__` 제외, 변경된 `.py` 파일과 문서 파일만 스테이징
+   ```bash
+   git add src/... README.md CLAUDE.md installer/setup.iss
+   git commit -m "..."
+   git push
+   ```
+
+5. **exe 빌드**
+   ```bash
+   python build.py
+   ```
+
+6. **설치 파일 생성**
+   ```powershell
+   & 'C:\Users\insun\AppData\Local\Programs\Inno Setup 6\ISCC.exe' installer/setup.iss
+   ```
+
+7. **GitHub 릴리즈 생성**
+   ```bash
+   gh release create vX.X.X dist/installer/MeetingAlarm_Setup.exe --title "vX.X.X" --notes "..."
+   ```
+   - 같은 태그 릴리즈가 이미 있으면 `gh release upload vX.X.X ... --clobber` 로 파일 교체
+   - GitHub CLI(`gh`) 위치: `C:\Users\insun\AppData\Local\GitHubCLI\bin\gh.exe`
+
 ## 데이터 저장 위치
 
 - `%APPDATA%\MeetingAlarm\meetings.json` - 미팅 목록
