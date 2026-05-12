@@ -149,4 +149,4 @@ class Meeting:
 - `__pycache__` 폴더가 git에 이미 트래킹된 상태 (`.gitignore`에 있지만 기존 커밋에 포함됨)
   - 소스 `.py` 파일만 스테이징해서 커밋할 것
 - Inno Setup이 시스템 전역이 아닌 사용자 로컬에 설치됨:
-  `C:\Users\insun\AppData\Local\Programs\Inno Setup 6\ISCC.exe`
+  `%LOCALAPPDATA%\Programs\Inno Setup 6\ISCC.exe`
