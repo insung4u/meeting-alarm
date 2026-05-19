@@ -6,6 +6,7 @@ from typing import List, Callable, Optional
 from ..core.meeting import Meeting
 from ..core.storage import load_settings, save_settings
 from ..utils.autostart import is_autostart_enabled, set_autostart
+from ..version import VERSION
 from .meeting_dialog import MeetingDialog
 
 
@@ -81,7 +82,12 @@ class MainWindow:
         self.tree.column("repeat", width=60, anchor=tk.CENTER)
 
         # 취소선 태그 (1회 알림 완료된 항목)
-        done_font = tkfont.Font(overstrike=True)
+        base_font = tkfont.nametofont("TkDefaultFont")
+        done_font = tkfont.Font(
+            family=base_font.actual("family"),
+            size=base_font.actual("size"),
+            overstrike=True
+        )
         self.tree.tag_configure("done", font=done_font, foreground="gray")
 
         # 스크롤바
@@ -181,7 +187,7 @@ class MainWindow:
         settings_win.transient(self.root)
         settings_win.grab_set()
 
-        width, height = 300, 200
+        width, height = 300, 220
         x = self.root.winfo_x() + (self.root.winfo_width() - width) // 2
         y = self.root.winfo_y() + (self.root.winfo_height() - height) // 2
         settings_win.geometry(f"{width}x{height}+{x}+{y}")
@@ -222,6 +228,8 @@ class MainWindow:
         btn_frame.pack()
         ttk.Button(btn_frame, text="저장", command=save_settings_click).pack(side=tk.LEFT, padx=(0, 10))
         ttk.Button(btn_frame, text="취소", command=settings_win.destroy).pack(side=tk.LEFT)
+
+        ttk.Label(frame, text=f"버전 {VERSION}", foreground="gray").pack(pady=(12, 0))
 
     def update_status(self, message: str) -> None:
         """상태바 메시지 업데이트"""

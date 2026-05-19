@@ -1,6 +1,6 @@
 """미팅 데이터 모델"""
 from dataclasses import dataclass, field, asdict
-from typing import List
+from typing import List, Optional
 import uuid
 
 
@@ -14,6 +14,8 @@ class Meeting:
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     enabled: bool = True
     repeat: bool = True  # True=매주 반복, False=1회
+    start_date: Optional[str] = None  # YYYY-MM-DD
+    end_date: Optional[str] = None    # YYYY-MM-DD (repeat 시 종료일)
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -21,6 +23,8 @@ class Meeting:
     @classmethod
     def from_dict(cls, data: dict) -> "Meeting":
         data.setdefault("repeat", True)
+        data.setdefault("start_date", None)
+        data.setdefault("end_date", None)
         return cls(**data)
 
     def get_time_str(self) -> str:

@@ -1,6 +1,6 @@
 """알림 스케줄러"""
 import threading
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
 from typing import List, Callable, Optional
 import time
 
@@ -42,6 +42,7 @@ class Scheduler:
 
     def _check_alerts(self) -> None:
         now = datetime.now()
+        today = now.date()
         current_day = now.weekday()  # 0=월요일
 
         # 매일 자정에 알림 기록 초기화
@@ -51,8 +52,32 @@ class Scheduler:
         for meeting in self.meetings:
             if not meeting.enabled:
                 continue
-            if current_day not in meeting.days:
-                continue
+
+            # 날짜 / 요일 체크
+            if not meeting.repeat and meeting.start_date:
+                # 1회 미팅: 지정 날짜에만 발동
+                try:
+                    if today != date.fromisoformat(meeting.start_date):
+                        continue
+                except ValueError:
+                    continue
+            else:
+                # 요일 체크
+                if current_day not in meeting.days:
+                    continue
+                # 매주 반복 날짜 범위 체크
+                if meeting.start_date:
+                    try:
+                        if today < date.fromisoformat(meeting.start_date):
+                            continue
+                    except ValueError:
+                        pass
+                if meeting.end_date:
+                    try:
+                        if today > date.fromisoformat(meeting.end_date):
+                            continue
+                    except ValueError:
+                        pass
 
             # 미팅 시간
             meeting_time = now.replace(
@@ -66,7 +91,7 @@ class Scheduler:
             alert_time = meeting_time - timedelta(minutes=meeting.alert_minutes)
 
             # 알림 키 (오늘 날짜 + 미팅 ID)
-            alert_key = (meeting.id, now.date().isoformat())
+            alert_key = (meeting.id, today.isoformat())
 
             # 현재 시간이 알림 시간 범위 내인지 확인 (±30초)
             time_diff = (now - alert_time).total_seconds()
@@ -82,6 +107,7 @@ class Scheduler:
     def get_next_alert_info(self) -> Optional[str]:
         """다음 알림 정보 반환"""
         now = datetime.now()
+        today = now.date()
         current_day = now.weekday()
 
         next_alerts = []
@@ -90,24 +116,51 @@ class Scheduler:
             if not meeting.enabled:
                 continue
 
-            for day_offset in range(7):
-                check_day = (current_day + day_offset) % 7
-                if check_day not in meeting.days:
+            if not meeting.repeat and meeting.start_date:
+                # 1회 미팅: 지정 날짜의 알림 시간 계산
+                try:
+                    target = date.fromisoformat(meeting.start_date)
+                except ValueError:
                     continue
-
-                # 해당 요일의 알림 시간 계산
-                days_ahead = day_offset
-                meeting_datetime = now.replace(
-                    hour=meeting.hour,
-                    minute=meeting.minute,
-                    second=0,
-                    microsecond=0
+                if target < today:
+                    continue
+                days_ahead = (target - today).days
+                meeting_dt = now.replace(
+                    hour=meeting.hour, minute=meeting.minute, second=0, microsecond=0
                 ) + timedelta(days=days_ahead)
+                alert_dt = meeting_dt - timedelta(minutes=meeting.alert_minutes)
+                if alert_dt > now:
+                    next_alerts.append((alert_dt, meeting))
+            else:
+                for day_offset in range(7):
+                    check_day = (current_day + day_offset) % 7
+                    if check_day not in meeting.days:
+                        continue
 
-                alert_datetime = meeting_datetime - timedelta(minutes=meeting.alert_minutes)
+                    meeting_dt = now.replace(
+                        hour=meeting.hour, minute=meeting.minute, second=0, microsecond=0
+                    ) + timedelta(days=day_offset)
+                    alert_dt = meeting_dt - timedelta(minutes=meeting.alert_minutes)
 
-                if alert_datetime > now:
-                    next_alerts.append((alert_datetime, meeting))
+                    if alert_dt <= now:
+                        continue
+
+                    # 날짜 범위 체크
+                    check_date = today + timedelta(days=day_offset)
+                    if meeting.start_date:
+                        try:
+                            if check_date < date.fromisoformat(meeting.start_date):
+                                continue
+                        except ValueError:
+                            pass
+                    if meeting.end_date:
+                        try:
+                            if check_date > date.fromisoformat(meeting.end_date):
+                                continue
+                        except ValueError:
+                            pass
+
+                    next_alerts.append((alert_dt, meeting))
                     break
 
         if not next_alerts:
