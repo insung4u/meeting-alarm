@@ -3,7 +3,7 @@
 
 #define MyAppName "회의 알림"
 #define MyAppNameEng "MeetingAlarm"
-#define MyAppVersion "1.0.1"
+#define MyAppVersion "1.0.2"
 #define MyAppPublisher "Meeting Alarm"
 #define MyAppExeName "MeetingAlarm.exe"
 
