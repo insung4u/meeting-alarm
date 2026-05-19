@@ -13,6 +13,9 @@ dist/
 .vscode/
 .idea/
 
+# Claude Code
+.claude/settings.local.json
+
 # Misc
 nul
 *.log
