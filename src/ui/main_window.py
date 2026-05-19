@@ -1,4 +1,5 @@
 """메인 윈도우 UI"""
+import subprocess
 import tkinter as tk
 from tkinter import ttk, messagebox, font as tkfont
 from typing import List, Callable, Optional
@@ -6,6 +7,7 @@ from typing import List, Callable, Optional
 from ..core.meeting import Meeting
 from ..core.storage import load_settings, save_settings
 from ..utils.autostart import is_autostart_enabled, set_autostart
+from ..utils.updater import get_latest_version, download_installer
 from ..version import VERSION
 from .meeting_dialog import MeetingDialog
 
@@ -187,7 +189,7 @@ class MainWindow:
         settings_win.transient(self.root)
         settings_win.grab_set()
 
-        width, height = 300, 220
+        width, height = 320, 310
         x = self.root.winfo_x() + (self.root.winfo_width() - width) // 2
         y = self.root.winfo_y() + (self.root.winfo_height() - height) // 2
         settings_win.geometry(f"{width}x{height}+{x}+{y}")
@@ -229,7 +231,87 @@ class MainWindow:
         ttk.Button(btn_frame, text="저장", command=save_settings_click).pack(side=tk.LEFT, padx=(0, 10))
         ttk.Button(btn_frame, text="취소", command=settings_win.destroy).pack(side=tk.LEFT)
 
-        ttk.Label(frame, text=f"버전 {VERSION}", foreground="gray").pack(pady=(12, 0))
+        # 버전 / 업데이트
+        ttk.Separator(frame, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=(10, 12))
+
+        ttk.Label(frame, text=f"현재 버전: {VERSION}", foreground="gray").pack(anchor=tk.W)
+
+        latest_row = ttk.Frame(frame)
+        latest_row.pack(anchor=tk.W, pady=(6, 0))
+
+        latest_label = ttk.Label(latest_row, text="최신 버전: 확인 중...", foreground="gray")
+        latest_label.pack(side=tk.LEFT)
+
+        update_btn = ttk.Button(latest_row, text="업데이트", state=tk.DISABLED)
+        update_btn.pack(side=tk.LEFT, padx=(12, 0))
+
+        def start_update(ver: str) -> None:
+            update_btn.config(state=tk.DISABLED, text="다운로드 중... 0%")
+
+            def on_progress(pct: int) -> None:
+                try:
+                    settings_win.after(0, lambda: update_btn.config(text=f"다운로드 중... {pct}%"))
+                except Exception:
+                    pass
+
+            def on_done(path: str) -> None:
+                def _run():
+                    try:
+                        messagebox.showinfo(
+                            "업데이트",
+                            f"v{ver} 설치를 시작합니다.\n프로그램이 종료됩니다.",
+                            parent=settings_win,
+                        )
+                    except Exception:
+                        pass
+                    subprocess.Popen([path])
+                    self.root.after(200, self.root.quit)
+                try:
+                    settings_win.after(0, _run)
+                except Exception:
+                    pass
+
+            def on_error(msg: str) -> None:
+                def _show():
+                    try:
+                        messagebox.showerror("오류", f"다운로드 실패:\n{msg}", parent=settings_win)
+                        update_btn.config(state=tk.NORMAL, text="업데이트")
+                    except Exception:
+                        pass
+                try:
+                    settings_win.after(0, _show)
+                except Exception:
+                    pass
+
+            download_installer(ver, on_progress, on_done, on_error)
+
+        def on_version_check(latest_ver: Optional[str]) -> None:
+            def update_ui() -> None:
+                if not settings_win.winfo_exists():
+                    return
+                if latest_ver is None:
+                    latest_label.config(text="최신 버전: 확인 실패")
+                    return
+                try:
+                    cur_t = tuple(int(x) for x in VERSION.split("."))
+                    lat_t = tuple(int(x) for x in latest_ver.split("."))
+                except ValueError:
+                    latest_label.config(text="최신 버전: 확인 실패")
+                    return
+                if lat_t > cur_t:
+                    latest_label.config(
+                        text=f"최신 버전: {latest_ver}  (업데이트 가능)",
+                        foreground="#0055cc",
+                    )
+                    update_btn.config(state=tk.NORMAL, command=lambda: start_update(latest_ver))
+                else:
+                    latest_label.config(text=f"최신 버전: {latest_ver}  (최신 상태)")
+            try:
+                settings_win.after(0, update_ui)
+            except Exception:
+                pass
+
+        get_latest_version(on_version_check)
 
     def update_status(self, message: str) -> None:
         """상태바 메시지 업데이트"""
